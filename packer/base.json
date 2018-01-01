@@ -1,0 +1,73 @@
+{
+  "variables": {
+    "build_number": "2017.12.23.8"
+  },
+  "builders": [
+    {
+      "type": "digitalocean",
+      "api_token": "API_TOKEN_OMITTED",
+      "image": "ubuntu-14-04-x64",
+      "region": "nyc3",
+      "size": "512mb",
+      "ssh_username": "root",
+      "snapshot_name": "base.{{user `build_number`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "pause_before": "30s",
+      "inline": [
+        "sleep 30",
+        "sudo apt install unzip",
+
+        "curl -LOk https://releases.hashicorp.com/consul/1.0.2/consul_1.0.2_linux_amd64.zip && unzip consul_1.0.2_linux_amd64.zip && sudo cp consul /usr/bin/consul",
+        "consul --version",
+
+        "curl -LOk https://releases.hashicorp.com/nomad/0.7.1/nomad_0.7.1_linux_amd64.zip && unzip nomad_0.7.1_linux_amd64.zip && sudo cp nomad /usr/bin/nomad",
+        "nomad --version"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "tools/tool-hc.sh",
+      "destination": "/usr/bin/tool-hc"
+    },
+    {
+      "type": "file",
+      "source": "tools/tool-ip.sh",
+      "destination": "/usr/bin/tool-ip"
+    },
+    {
+      "type": "shell",
+      "pause_before": "1s",
+      "inline": [
+        "mkdir /etc/consul.d",
+        "mkdir /tmp/consul",
+
+        "mkdir /tmp/nomad",
+        "mkdir /etc/nomad.d"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "../consul/consul_cluster_config.json",
+      "destination": "/etc/consul.d/consul_cluster_config.json"
+    },
+    {
+      "type": "file",
+      "source": "../consul/frontserve.service.json",
+      "destination": "/etc/consul.d/frontserve.service.json"
+    },
+    {
+      "type": "file",
+      "source": "../nomad/server.hcl",
+      "destination": "/etc/nomad.d/server.hcl"
+    },
+    {
+      "type": "file",
+      "source": "./nomad/client.hcl",
+      "destination": "/etc/nomad.d/client.hcl"
+    }
+  ]
+}

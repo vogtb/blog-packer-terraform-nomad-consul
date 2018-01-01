@@ -1,0 +1,7 @@
+{
+  "service": {
+    "name": "frontserve",
+    "tags": [],
+    "port": 8085
+  }
+}
